@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pediatric DRE Risk Calculator</title>
+<style>
+  :root { --bg:#0b1220; --card:#121a2b; --text:#e7eefc; --muted:#9bb0d3; --accent:#5aa9ff; }
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .wrap{max-width:980px;margin:0 auto;padding:24px}
+  .card{background:var(--card);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  h1{margin:0 0 4px;font-size:26px}
+  .spacer{height:8px}
+  .sub{color:var(--muted);margin-bottom:12px}
+  .meta{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin-bottom:8px}
+  .ack{color:var(--muted);font-size:14px;margin-bottom:16px}
+  label{display:block;margin:8px 0 4px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .row .col{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:12px}
+  .chk{display:flex;gap:8px;align-items:center;margin:6px 0}
+  select,button,input[type=range]{background:#0f172a;color:var(--text);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 12px;font-size:15px}
+  button{cursor:pointer}
+  .btns{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .btn-reset{background:transparent;border:1px solid rgba(255,255,255,.25);color:var(--muted);font-size:14px;padding:8px 14px}
+  .btn-reset:hover{border-color:var(--accent);color:var(--text)}
+  .out{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  .tile{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;min-height:92px}
+  .big{font-size:22px;font-weight:700;display:flex;gap:8px;align-items:center}
+  .note{color:var(--muted);font-size:13px;margin-top:8px}
+  .risk-low{color:#10b981} .risk-mid{color:#f59e0b} .risk-high{color:#ef4444}
+  .risk-low-bg{background:rgba(16,185,129,.12)!important;border-color:rgba(16,185,129,.35)!important}
+  .risk-mid-bg{background:rgba(245,158,11,.12)!important;border-color:rgba(245,158,11,.35)!important}
+  .risk-high-bg{background:rgba(239,68,68,.12)!important;border-color:rgba(239,68,68,.35)!important}
+
+  /* Contribution chart */
+  .contrib{margin-top:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px}
+  .contrib h3{margin:0 0 10px}
+  .contrib-row{display:flex;align-items:center;margin:5px 0;font-size:13px}
+  .contrib-label{width:220px;text-align:right;padding-right:10px;color:var(--muted);flex-shrink:0}
+  .contrib-bar-wrap{flex:1;height:20px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden;position:relative}
+  .contrib-bar{height:100%;border-radius:4px;transition:width .35s ease}
+  .contrib-val{width:55px;text-align:right;padding-left:8px;font-weight:600;font-size:12px;flex-shrink:0}
+  .contrib-empty{color:var(--muted);font-size:13px;font-style:italic}
+
+  .settings{margin-top:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px}
+  .settings h3{margin:0 0 8px}
+  .sliders{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .slider label{display:flex;justify-content:space-between;align-items:center}
+  .summary{margin-top:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px}
+  .summary h3{margin:0 0 8px}
+  table.sum{width:100%;border-collapse:collapse;font-size:14px}
+  table.sum th, table.sum td{border-bottom:1px solid rgba(255,255,255,.08);padding:6px 8px;text-align:left}
+  .refs{font-size:13px;color:var(--muted)}
+  .kicker{font-size:13px;color:var(--muted)}
+
+  /* OR table */
+  table.or-tbl{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+  table.or-tbl th{background:rgba(255,255,255,.06);padding:6px 8px;text-align:left;font-weight:600}
+  table.or-tbl td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.06)}
+  table.or-tbl tr:hover td{background:rgba(90,169,255,.08)}
+
+  /* Model performance badge */
+  .perf{margin-top:16px;background:rgba(90,169,255,.08);border:1px solid rgba(90,169,255,.2);border-radius:12px;padding:14px}
+  .perf h3{margin:0 0 8px;color:var(--accent)}
+  .perf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+  .perf-item{font-size:13px}
+  .perf-item .perf-label{color:var(--muted)}
+  .perf-item .perf-value{font-weight:700;font-size:15px}
+
+  details.help{margin-top:18px}
+  details.help summary{cursor:pointer;font-weight:700}
+  details.help .content{margin-top:8px;color:#c8d6f4;line-height:1.45}
+  @media (max-width:900px){.row{grid-template-columns:1fr}.out{grid-template-columns:1fr 1fr}.sliders{grid-template-columns:1fr}.perf-grid{grid-template-columns:1fr 1fr}.contrib-label{width:140px;font-size:11px}}
+  @media print {
+    body{background:#fff;color:#000; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
+    .card, .row .col, .tile, .settings, .summary, .contrib, .perf{box-shadow:none;border:1px solid #bbb;background:#fff;color:#000}
+    .wrap{max-width:100%;padding:0}
+    .btns, details.help{display:none}
+    .kicker{color:#000}
+    .contrib-label{color:#555}
+    .perf-item .perf-label{color:#555}
+    .risk-low{color:#000} .risk-mid{color:#000} .risk-high{color:#000}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Pediatric Drug-Resistant Epilepsy (DRE) Risk Calculator</h1>
+    <div class="spacer"></div>
+    <div class="meta">
+      <div><strong>Author:</strong> Ohcheol KWON</div>
+      <div><strong>Affiliation:</strong> Department of Pediatrics, Asan Medical Center Children's Hospital, University of Ulsan College of Medicine, Seoul, Republic of Korea</div>
+    </div>
+    <div class="ack">
+      <strong>Acknowledgment:</strong> This research was supported by a grant of the Korea Health Technology R&amp;D Project, through the Korea Health Industry Development Institute (KHIDI), funded by the Ministry of Health &amp; Welfare, Republic of Korea (grant number: HI19C0481, HC20C0164).
+    </div>
+    <div class="sub">Client-side app. No data leaves your browser. Logistic model = intercept + &Sigma;&beta;x &rarr; p = 1/(1+e<sup>&minus;LP</sup>)</div>
+
+    <div class="row">
+      <div class="col">
+        <div class="chk"><input type="checkbox" id="onset"><label for="onset">Seizure onset age &lt; 1 year (Yes)</label></div>
+
+        <label for="freq">Seizure frequency before treatment (baseline: yearly)</label>
+        <select id="freq">
+          <option value="yearly">yearly (ref)</option>
+          <option value="monthly">monthly</option>
+          <option value="weekly">weekly</option>
+          <option value="daily">daily</option>
+        </select>
+
+        <div class="chk"><input type="checkbox" id="se"><label for="se">History of status epilepticus (Yes)</label></div>
+        <div class="chk"><input type="checkbox" id="dev"><label for="dev">Developmental disorders (Yes)</label></div>
+        <div class="chk"><input type="checkbox" id="neuro"><label for="neuro">Neurological abnormalities (Yes)</label></div>
+      </div>
+
+      <div class="col">
+        <label for="etype">Epilepsy type (baseline: generalized)</label>
+        <select id="etype">
+          <option value="generalized">generalized (ref)</option>
+          <option value="focal">focal</option>
+          <option value="combined">combined</option>
+          <option value="unknown">unknown</option>
+        </select>
+
+        <div class="chk"><input type="checkbox" id="eeg"><label for="eeg">EEG background abnormality (Yes)</label></div>
+        <div class="chk"><input type="checkbox" id="eti_s"><label for="eti_s">Etiology: structural (Yes)</label></div>
+        <div class="chk"><input type="checkbox" id="eti_i"><label for="eti_i">Etiology: infectious or autoimmune (Yes)</label></div>
+
+        <div class="btns">
+          <button id="compute">Compute</button>
+          <button id="savepdf" title="Download a PDF summary of the current calculation">Save PDF</button>
+          <button id="resetbtn" class="btn-reset" title="Reset all inputs to default">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Output tiles -->
+    <div class="out">
+      <div class="tile"><div>Linear predictor (LP)</div><div id="lp" class="big">&ndash;</div></div>
+      <div class="tile"><div>Total Points</div><div id="pts" class="big">&ndash;</div></div>
+      <div class="tile"><div>Risk of DRE</div><div id="risk" class="big">&ndash;</div></div>
+      <div class="tile" id="risk_tile"><div>Risk category</div><div class="big"><span id="cat_icon" aria-hidden="true">&ndash;</span><span id="cat">&ndash;</span></div></div>
+    </div>
+
+    <!-- Variable contribution chart -->
+    <div class="contrib">
+      <h3>Variable Contribution to Risk</h3>
+      <div id="contrib_chart"><span class="contrib-empty">Select clinical features to see individual contributions.</span></div>
+    </div>
+
+    <!-- Model performance -->
+    <div class="perf">
+      <h3>Model Performance</h3>
+      <div class="perf-grid">
+        <div class="perf-item"><span class="perf-label">Development cohort</span><br><span class="perf-value">N = 4,208 (Train 2,947 / Val 1,261)</span></div>
+        <div class="perf-item"><span class="perf-label">AUC &mdash; Training (95% CI)</span><br><span class="perf-value">0.770 (0.752&ndash;0.788)</span></div>
+        <div class="perf-item"><span class="perf-label">AUC &mdash; Validation (95% CI)</span><br><span class="perf-value">0.777 (0.750&ndash;0.804)</span></div>
+        <div class="perf-item"><span class="perf-label">Optimism-corrected AUC</span><br><span class="perf-value">0.766</span></div>
+        <div class="perf-item"><span class="perf-label">Calibration slope (Val)</span><br><span class="perf-value">1.027 (0.889&ndash;1.164)</span></div>
+        <div class="perf-item"><span class="perf-label">CITL (Val)</span><br><span class="perf-value">&minus;0.019 (&minus;0.150 to 0.112)</span></div>
+        <div class="perf-item"><span class="perf-label">Brier score (Train / Val)</span><br><span class="perf-value">0.177 / 0.176</span></div>
+        <div class="perf-item"><span class="perf-label">GiViTI belt p (Val)</span><br><span class="perf-value">0.965</span></div>
+        <div class="perf-item"><span class="perf-label">Bootstrap stability</span><br><span class="perf-value">9/9 variables &ge;70%</span></div>
+      </div>
+      <div class="note">Internal validation: random 70:30 split + bootstrap optimism correction (B=1,000). DCA superior range: threshold ~10% to ~75%.</div>
+    </div>
+
+    <div class="settings">
+      <h3>Risk thresholds</h3>
+      <div class="sliders">
+        <div class="slider">
+          <label for="low_cut">Low cut-off <span id="low_val">20%</span></label>
+          <input type="range" id="low_cut" min="0.00" max="0.90" step="0.01" value="0.20">
+        </div>
+        <div class="slider">
+          <label for="high_cut">High cut-off <span id="high_val">70%</span></label>
+          <input type="range" id="high_cut" min="0.05" max="0.95" step="0.01" value="0.70">
+        </div>
+      </div>
+      <div class="note" id="cut_rule">Current rule: p &lt; 20% &rarr; Low; 20&ndash;70% &rarr; Intermediate; &ge; 70% &rarr; High.</div>
+    </div>
+
+    <div class="summary" id="summary" hidden>
+      <h3>Summary of current calculation</h3>
+      <table class="sum" id="sum_table"></table>
+      <div class="note">This section is included when you Save PDF (print).</div>
+    </div>
+
+    <p class="kicker">* Points are relative (&beta;-based) for display only. Probability uses your exact model.</p>
+
+    <details class="help">
+      <summary>Help &amp; FAQ</summary>
+      <div class="content">
+        <h3>About This Tool</h3>
+        <ul>
+          <li><strong>Purpose:</strong> Early estimation of pediatric drug-resistant epilepsy (DRE) risk using a multivariable logistic regression model.</li>
+          <li><strong>Data Privacy:</strong> All calculations run locally in your browser; no data is sent or stored.</li>
+          <li><strong>Usage:</strong> Select clinical features at/near diagnosis. Results update automatically. You can also <em>Save PDF</em> for documentation.</li>
+        </ul>
+
+        <h3>Variable Definitions</h3>
+        <ul>
+          <li><strong>Seizure frequency:</strong> Frequency prior to treatment initiation categorized as
+            <em>daily</em> (&ge;1 seizure/day), <em>weekly</em> (1&ndash;6/week), <em>monthly</em> (1&ndash;3/month), or <em>yearly</em> (1&ndash;11/year).</li>
+          <li><strong>Epilepsy type:</strong> Classified as focal, generalized, combined focal-generalized, or unknown according to the 2017 ILAE guidelines.
+            <span class="refs">Scheffer IE, Berkovic S, Capovilla G, Connolly MB, French JA, Guilhoto L, et al. ILAE classification of the epilepsies. <em>Epilepsia</em>. 2017;58(4):512-521.</span></li>
+          <li><strong>Epilepsy etiology:</strong> Categorized into structural, genetic, infectious, immune, metabolic, or unknown, according to the 2017 ILAE guidelines. The &ldquo;infectious or autoimmune&rdquo; category includes both infectious and immune-mediated etiologies.
+            <span class="refs">Scheffer IE, Berkovic S, Capovilla G, Connolly MB, French JA, Guilhoto L, et al. ILAE classification of the epilepsies. <em>Epilepsia</em>. 2017;58(4):512-521.</span></li>
+          <li><strong>Neurological abnormalities:</strong> Presence of neurological abnormalities (e.g., motor deficits, cranial nerve abnormalities) identified at initial diagnosis.</li>
+          <li><strong>Developmental disorders:</strong> Developmental delay or intellectual disability diagnosed either at epilepsy diagnosis or during subsequent follow-up.</li>
+        </ul>
+
+        <h3>Model Coefficients (Odds Ratios)</h3>
+        <table class="or-tbl">
+          <thead><tr><th>Variable</th><th>OR</th><th>95% CI</th><th>p</th></tr></thead>
+          <tbody>
+            <tr><td>Seizure onset &lt; 1 year</td><td>1.866</td><td>1.499&ndash;2.321</td><td>&lt;0.001</td></tr>
+            <tr><td>Seizure freq: daily (vs yearly)</td><td>4.140</td><td>3.268&ndash;5.244</td><td>&lt;0.001</td></tr>
+            <tr><td>Seizure freq: weekly (vs yearly)</td><td>3.357</td><td>2.435&ndash;4.629</td><td>&lt;0.001</td></tr>
+            <tr><td>Seizure freq: monthly (vs yearly)</td><td>1.884</td><td>1.530&ndash;2.319</td><td>&lt;0.001</td></tr>
+            <tr><td>Status epilepticus</td><td>1.943</td><td>1.224&ndash;3.083</td><td>0.005</td></tr>
+            <tr><td>Developmental disorders</td><td>1.888</td><td>1.508&ndash;2.363</td><td>&lt;0.001</td></tr>
+            <tr><td>Neurological abnormalities</td><td>1.306</td><td>1.006&ndash;1.696</td><td>0.045</td></tr>
+            <tr><td>Epilepsy type: focal (vs generalized)</td><td>1.360</td><td>1.051&ndash;1.758</td><td>0.019</td></tr>
+            <tr><td>Epilepsy type: combined (vs generalized)</td><td>2.231</td><td>1.608&ndash;3.097</td><td>&lt;0.001</td></tr>
+            <tr><td>Epilepsy type: unknown (vs generalized)</td><td>1.485</td><td>0.987&ndash;2.237</td><td>0.058</td></tr>
+            <tr><td>EEG background abnormality</td><td>1.768</td><td>1.423&ndash;2.198</td><td>&lt;0.001</td></tr>
+            <tr><td>Etiology: structural</td><td>1.935</td><td>1.573&ndash;2.380</td><td>&lt;0.001</td></tr>
+            <tr><td>Etiology: infectious or autoimmune</td><td>2.092</td><td>1.350&ndash;3.242</td><td>0.001</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Definition of Drug-Resistant Epilepsy (DRE)</h3>
+        <p>Drug-resistant epilepsy is defined as the persistence of seizures despite <em>adequate trials of two</em> tolerated and appropriately chosen antiseizure medication regimens, used either as monotherapies or in combination. &ldquo;Sustained seizure freedom&rdquo; is typically taken as freedom from seizures for <em>at least 12 months</em> or for a period &ge; <em>three times</em> the longest pre-intervention inter-seizure interval, whichever is longer.</p>
+        <p class="refs">Kwan P, Arzimanoglou A, Berg AT, Brodie MJ, Allen Hauser W, Mathern G, et al. Definition of drug resistant epilepsy: Consensus proposal by the ad hoc Task Force of the ILAE Commission on Therapeutic Strategies. <em>Epilepsia</em>. 2010;51(6):1069-1077.</p>
+
+        <h3>Interpretation</h3>
+        <ul>
+          <li><strong>Low risk (&lt;20%)</strong>: Unlikely to develop DRE; continue monitoring.</li>
+          <li><strong>Intermediate risk (20&ndash;70%)</strong>: Consider closer follow-up and early intervention strategies.</li>
+          <li><strong>High risk (&ge;70%)</strong>: High likelihood of DRE; discuss treatment intensification and alternative therapies including early surgical evaluation.</li>
+        </ul>
+
+        <h3>Limitations</h3>
+        <ul>
+          <li>Model derived from a single-center retrospective cohort; performance may vary in different populations.</li>
+          <li>This tool does not replace clinical judgment.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+
+<script>
+const INTERCEPT = -2.2008;
+const BETAS = {
+  "Sz_1y_yes": 0.6235,
+  "Sz_count_daily": 1.4206,
+  "Sz_count_weekly": 1.2111,
+  "Sz_count_monthly": 0.6333,
+  "status_epilepticus": 0.6643,
+  "dev_def": 0.6354,
+  "neuro_def": 0.2668,
+  "epilepsy_type_focal": 0.3071,
+  "epilepsy_type_combined": 0.8026,
+  "epilepsy_type_unknown": 0.3957,
+  "EEG_bg": 0.5701,
+  "eti_structural": 0.6601,
+  "eti_infection_or_autoimmune": 0.7383,
+};
+
+/* Human-readable labels for contribution chart */
+const LABELS = {
+  "Sz_1y_yes": "Seizure onset < 1 yr",
+  "Sz_count_daily": "Sz freq: daily",
+  "Sz_count_weekly": "Sz freq: weekly",
+  "Sz_count_monthly": "Sz freq: monthly",
+  "status_epilepticus": "Status epilepticus",
+  "dev_def": "Developmental disorders",
+  "neuro_def": "Neurological abnormalities",
+  "epilepsy_type_focal": "Type: focal",
+  "epilepsy_type_combined": "Type: combined",
+  "epilepsy_type_unknown": "Type: unknown",
+  "EEG_bg": "EEG background abnl.",
+  "eti_structural": "Etiology: structural",
+  "eti_infection_or_autoimmune": "Etiology: infect/autoimmune",
+};
+
+let LOW_CUT = 0.20, HIGH_CUT = 0.70;
+
+function invLogit(x){ return 1/(1+Math.exp(-x)); }
+const MAX_ABS_BETA = Math.max(...Object.values(BETAS).map(b => Math.abs(b)));
+function betaToPoints(b){ return Math.abs(b)/MAX_ABS_BETA*100.0; }
+
+function getInputs(){
+  return {
+    onset: document.getElementById('onset').checked,
+    freq: document.getElementById('freq').value,
+    se: document.getElementById('se').checked,
+    dev: document.getElementById('dev').checked,
+    neuro: document.getElementById('neuro').checked,
+    etype: document.getElementById('etype').value,
+    eeg: document.getElementById('eeg').checked,
+    eti_s: document.getElementById('eti_s').checked,
+    eti_i: document.getElementById('eti_i').checked
+  };
+}
+
+function fmtYesNo(v){ return v ? "Yes" : "No"; }
+function pct(x){ return (100*x).toFixed(1) + "%"; }
+
+/* -- Contribution chart -- */
+function renderContrib(activeVars){
+  const el = document.getElementById('contrib_chart');
+  if(activeVars.length === 0){
+    el.innerHTML = '<span class="contrib-empty">Select clinical features to see individual contributions.</span>';
+    return;
+  }
+  /* sort by beta descending */
+  activeVars.sort((a,b) => b.beta - a.beta);
+
+  el.innerHTML = activeVars.map(v => {
+    const pctWidth = Math.max(4, (v.beta / MAX_ABS_BETA) * 100);
+    const hue = v.beta >= 1.0 ? '0' : v.beta >= 0.6 ? '30' : '210';
+    const color = 'hsl(' + hue + ',70%,55%)';
+    return '<div class="contrib-row">' +
+      '<span class="contrib-label">' + v.label + '</span>' +
+      '<div class="contrib-bar-wrap">' +
+        '<div class="contrib-bar" style="width:' + pctWidth.toFixed(1) + '%;background:' + color + '"></div>' +
+      '</div>' +
+      '<span class="contrib-val" style="color:' + color + '">\u03B2 ' + v.beta.toFixed(3) + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+function renderSummary(last){
+  const tbl = document.getElementById('sum_table');
+  const cutLow = Math.round(LOW_CUT*100);
+  const cutHigh = Math.round(HIGH_CUT*100);
+  const rows = [
+    ["Timestamp (local)", new Date().toLocaleString()],
+    ["Seizure onset age < 1 year", fmtYesNo(last.inputs.onset)],
+    ["Seizure frequency (before treatment)", last.inputs.freq],
+    ["History of status epilepticus", fmtYesNo(last.inputs.se)],
+    ["Developmental disorders", fmtYesNo(last.inputs.dev)],
+    ["Neurological abnormalities", fmtYesNo(last.inputs.neuro)],
+    ["Epilepsy type", last.inputs.etype],
+    ["EEG background abnormality", fmtYesNo(last.inputs.eeg)],
+    ["Etiology: structural", fmtYesNo(last.inputs.eti_s)],
+    ["Etiology: infectious or autoimmune", fmtYesNo(last.inputs.eti_i)],
+    ["Linear predictor (LP)", last.lp.toFixed(3)],
+    ["Total Points", last.pts.toFixed(1)],
+    ["Risk of DRE", pct(last.p) ],
+    ["Risk category", last.cat],
+    ["Cut-offs", "Low < " + cutLow + "% ; " + cutLow + "\u2013" + cutHigh + "% Intermediate ; \u2265 " + cutHigh + "% High"]
+  ];
+  tbl.innerHTML = rows.map(function(r){ return '<tr><th>' + r[0] + '</th><td>' + r[1] + '</td></tr>'; }).join("");
+  document.getElementById('summary').hidden = false;
+}
+
+function updateCutoffs(){
+  const lowEl = document.getElementById('low_cut');
+  const highEl = document.getElementById('high_cut');
+  let l = parseFloat(lowEl.value);
+  let h = parseFloat(highEl.value);
+  const minGap = 0.01;
+  if (l >= h - minGap){ h = Math.min(0.95, l + minGap); highEl.value = h.toFixed(2); }
+  if (h <= l + minGap){ l = Math.max(0, h - minGap); lowEl.value = l.toFixed(2); }
+  LOW_CUT = l; HIGH_CUT = h;
+  document.getElementById('low_val').textContent = Math.round(LOW_CUT*100) + "%";
+  document.getElementById('high_val').textContent = Math.round(HIGH_CUT*100) + "%";
+  document.getElementById('cut_rule').textContent =
+    "Current rule: p < " + Math.round(LOW_CUT*100) + "% \u2192 Low; " + Math.round(LOW_CUT*100) + "\u2013" + Math.round(HIGH_CUT*100) + "% \u2192 Intermediate; \u2265 " + Math.round(HIGH_CUT*100) + "% \u2192 High.";
+  if (window.__dre_last__) compute();
+}
+
+function compute(){
+  const inp = getInputs();
+  let lp = INTERCEPT;
+  let pts = 0;
+  const active = [];
+
+  if(inp.onset){ lp += BETAS["Sz_1y_yes"]; pts += betaToPoints(BETAS["Sz_1y_yes"]); active.push({key:"Sz_1y_yes", beta:BETAS["Sz_1y_yes"], label:LABELS["Sz_1y_yes"]}); }
+
+  if(inp.freq==="monthly"){ lp += BETAS["Sz_count_monthly"]; pts += betaToPoints(BETAS["Sz_count_monthly"]); active.push({key:"Sz_count_monthly", beta:BETAS["Sz_count_monthly"], label:LABELS["Sz_count_monthly"]}); }
+  else if(inp.freq==="weekly"){ lp += BETAS["Sz_count_weekly"]; pts += betaToPoints(BETAS["Sz_count_weekly"]); active.push({key:"Sz_count_weekly", beta:BETAS["Sz_count_weekly"], label:LABELS["Sz_count_weekly"]}); }
+  else if(inp.freq==="daily"){ lp += BETAS["Sz_count_daily"]; pts += betaToPoints(BETAS["Sz_count_daily"]); active.push({key:"Sz_count_daily", beta:BETAS["Sz_count_daily"], label:LABELS["Sz_count_daily"]}); }
+
+  if(inp.se){ lp += BETAS["status_epilepticus"]; pts += betaToPoints(BETAS["status_epilepticus"]); active.push({key:"status_epilepticus", beta:BETAS["status_epilepticus"], label:LABELS["status_epilepticus"]}); }
+  if(inp.dev){ lp += BETAS["dev_def"]; pts += betaToPoints(BETAS["dev_def"]); active.push({key:"dev_def", beta:BETAS["dev_def"], label:LABELS["dev_def"]}); }
+  if(inp.neuro){ lp += BETAS["neuro_def"]; pts += betaToPoints(BETAS["neuro_def"]); active.push({key:"neuro_def", beta:BETAS["neuro_def"], label:LABELS["neuro_def"]}); }
+
+  if(inp.etype==="focal"){ lp += BETAS["epilepsy_type_focal"]; pts += betaToPoints(BETAS["epilepsy_type_focal"]); active.push({key:"epilepsy_type_focal", beta:BETAS["epilepsy_type_focal"], label:LABELS["epilepsy_type_focal"]}); }
+  else if(inp.etype==="combined"){ lp += BETAS["epilepsy_type_combined"]; pts += betaToPoints(BETAS["epilepsy_type_combined"]); active.push({key:"epilepsy_type_combined", beta:BETAS["epilepsy_type_combined"], label:LABELS["epilepsy_type_combined"]}); }
+  else if(inp.etype==="unknown"){ lp += BETAS["epilepsy_type_unknown"]; pts += betaToPoints(BETAS["epilepsy_type_unknown"]); active.push({key:"epilepsy_type_unknown", beta:BETAS["epilepsy_type_unknown"], label:LABELS["epilepsy_type_unknown"]}); }
+
+  if(inp.eeg){ lp += BETAS["EEG_bg"]; pts += betaToPoints(BETAS["EEG_bg"]); active.push({key:"EEG_bg", beta:BETAS["EEG_bg"], label:LABELS["EEG_bg"]}); }
+  if(inp.eti_s){ lp += BETAS["eti_structural"]; pts += betaToPoints(BETAS["eti_structural"]); active.push({key:"eti_structural", beta:BETAS["eti_structural"], label:LABELS["eti_structural"]}); }
+  if(inp.eti_i){ lp += BETAS["eti_infection_or_autoimmune"]; pts += betaToPoints(BETAS["eti_infection_or_autoimmune"]); active.push({key:"eti_infection_or_autoimmune", beta:BETAS["eti_infection_or_autoimmune"], label:LABELS["eti_infection_or_autoimmune"]}); }
+
+  const p = invLogit(lp);
+  let cat = "High", catClass = "risk-high", tileClass = "risk-high-bg", icon = "\uD83D\uDD34";
+  if(p < LOW_CUT){ cat = "Low"; catClass = "risk-low"; tileClass = "risk-low-bg"; icon = "\uD83D\uDFE2"; }
+  else if(p < HIGH_CUT){ cat = "Intermediate"; catClass = "risk-mid"; tileClass = "risk-mid-bg"; icon = "\uD83D\uDFE1"; }
+
+  document.getElementById('lp').textContent = lp.toFixed(3);
+  document.getElementById('risk').textContent = (100*p).toFixed(1) + "%";
+  document.getElementById('pts').textContent = pts.toFixed(1);
+
+  const catSpan = document.getElementById('cat');
+  const iconSpan = document.getElementById('cat_icon');
+  catSpan.textContent = cat;
+  catSpan.className = "big " + catClass;
+  iconSpan.textContent = icon;
+
+  const tile = document.getElementById('risk_tile');
+  tile.classList.remove("risk-low-bg","risk-mid-bg","risk-high-bg");
+  tile.classList.add(tileClass);
+
+  renderContrib(active);
+
+  const last = { lp: lp, p: p, pts: pts, cat: cat, inputs: inp, timestamp: new Date().toISOString() };
+  window.__dre_last__ = last;
+  renderSummary(last);
+}
+
+/* -- Reset -- */
+function resetAll(){
+  document.getElementById('onset').checked = false;
+  document.getElementById('freq').value = 'yearly';
+  document.getElementById('se').checked = false;
+  document.getElementById('dev').checked = false;
+  document.getElementById('neuro').checked = false;
+  document.getElementById('etype').value = 'generalized';
+  document.getElementById('eeg').checked = false;
+  document.getElementById('eti_s').checked = false;
+  document.getElementById('eti_i').checked = false;
+
+  document.getElementById('lp').textContent = '\u2013';
+  document.getElementById('pts').textContent = '\u2013';
+  document.getElementById('risk').textContent = '\u2013';
+  document.getElementById('cat').textContent = '\u2013';
+  document.getElementById('cat_icon').textContent = '\u2013';
+  var tile = document.getElementById('risk_tile');
+  tile.classList.remove("risk-low-bg","risk-mid-bg","risk-high-bg");
+
+  document.getElementById('summary').hidden = true;
+  document.getElementById('contrib_chart').innerHTML = '<span class="contrib-empty">Select clinical features to see individual contributions.</span>';
+  window.__dre_last__ = null;
+}
+
+function savePDF(){
+  if(!window.__dre_last__){ compute(); }
+  window.print();
+}
+
+/* -- Event listeners -- */
+document.getElementById('compute').addEventListener('click', compute);
+document.getElementById('savepdf').addEventListener('click', savePDF);
+document.getElementById('resetbtn').addEventListener('click', resetAll);
+document.getElementById('low_cut').addEventListener('input', updateCutoffs);
+document.getElementById('high_cut').addEventListener('input', updateCutoffs);
+
+/* Auto-compute: re-calculate on every input change */
+['onset','freq','se','dev','neuro','etype','eeg','eti_s','eti_i'].forEach(function(id){
+  document.getElementById(id).addEventListener('change', compute);
+});
+
+updateCutoffs();
+</script>
+</body>
+</html>
