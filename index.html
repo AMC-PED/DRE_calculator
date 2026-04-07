@@ -123,9 +123,8 @@
           <option value="unknown">unknown</option>
         </select>
 
-        <div class="chk"><input type="checkbox" id="eeg"><label for="eeg">EEG background abnormality (Yes)</label></div>
         <div class="chk"><input type="checkbox" id="eti_s"><label for="eti_s">Etiology: structural (Yes)</label></div>
-        <div class="chk"><input type="checkbox" id="eti_i"><label for="eti_i">Etiology: infectious or autoimmune (Yes)</label></div>
+        <div class="chk"><input type="checkbox" id="eti_i"><label for="eti_i">Etiology: infectious or immune (Yes)</label></div>
 
         <div class="btns">
           <button id="compute">Compute</button>
@@ -154,14 +153,14 @@
       <h3>Model Performance</h3>
       <div class="perf-grid">
         <div class="perf-item"><span class="perf-label">Development cohort</span><br><span class="perf-value">N = 4,208 (Train 2,947 / Val 1,261)</span></div>
-        <div class="perf-item"><span class="perf-label">AUC &mdash; Training (95% CI)</span><br><span class="perf-value">0.770 (0.752&ndash;0.788)</span></div>
-        <div class="perf-item"><span class="perf-label">AUC &mdash; Validation (95% CI)</span><br><span class="perf-value">0.777 (0.750&ndash;0.804)</span></div>
-        <div class="perf-item"><span class="perf-label">Optimism-corrected AUC</span><br><span class="perf-value">0.766</span></div>
-        <div class="perf-item"><span class="perf-label">Calibration slope (Val)</span><br><span class="perf-value">1.027 (0.889&ndash;1.164)</span></div>
-        <div class="perf-item"><span class="perf-label">CITL (Val)</span><br><span class="perf-value">&minus;0.019 (&minus;0.150 to 0.112)</span></div>
-        <div class="perf-item"><span class="perf-label">Brier score (Train / Val)</span><br><span class="perf-value">0.177 / 0.176</span></div>
-        <div class="perf-item"><span class="perf-label">GiViTI belt p (Val)</span><br><span class="perf-value">0.965</span></div>
-        <div class="perf-item"><span class="perf-label">Bootstrap stability</span><br><span class="perf-value">9/9 variables &ge;70%</span></div>
+        <div class="perf-item"><span class="perf-label">AUC &mdash; Training (95% CI)</span><br><span class="perf-value">0.765 (0.747&ndash;0.783)</span></div>
+        <div class="perf-item"><span class="perf-label">AUC &mdash; Validation (95% CI)</span><br><span class="perf-value">0.778 (0.751&ndash;0.805)</span></div>
+        <div class="perf-item"><span class="perf-label">Optimism-corrected AUC</span><br><span class="perf-value">0.761</span></div>
+        <div class="perf-item"><span class="perf-label">Calibration slope (Val)</span><br><span class="perf-value">1.062 (0.920&ndash;1.204)</span></div>
+        <div class="perf-item"><span class="perf-label">CITL (Val)</span><br><span class="perf-value">&minus;0.010 (&minus;0.141 to 0.120)</span></div>
+        <div class="perf-item"><span class="perf-label">Brier score (Train / Val)</span><br><span class="perf-value">0.180 / 0.176</span></div>
+        <div class="perf-item"><span class="perf-label">GiViTI belt p (Val)</span><br><span class="perf-value">0.490</span></div>
+        <div class="perf-item"><span class="perf-label">Bootstrap stability</span><br><span class="perf-value">8/8 variables &ge;90%</span></div>
       </div>
       <div class="note">Internal validation: random 70:30 split + bootstrap optimism correction (B=1,000). DCA superior range: threshold ~10% to ~75%.</div>
     </div>
@@ -205,7 +204,7 @@
             <em>daily</em> (&ge;1 seizure/day), <em>weekly</em> (1&ndash;6/week), <em>monthly</em> (1&ndash;3/month), or <em>yearly</em> (1&ndash;11/year).</li>
           <li><strong>Epilepsy type:</strong> Classified as focal, generalized, combined focal-generalized, or unknown according to the 2017 ILAE guidelines.
             <span class="refs">Scheffer IE, Berkovic S, Capovilla G, Connolly MB, French JA, Guilhoto L, et al. ILAE classification of the epilepsies. <em>Epilepsia</em>. 2017;58(4):512-521.</span></li>
-          <li><strong>Epilepsy etiology:</strong> Categorized into structural, genetic, infectious, immune, metabolic, or unknown, according to the 2017 ILAE guidelines. The &ldquo;infectious or autoimmune&rdquo; category includes both infectious and immune-mediated etiologies.
+          <li><strong>Epilepsy etiology:</strong> Categorized into structural, genetic, infectious, immune, metabolic, or unknown, according to the 2017 ILAE guidelines. The &ldquo;infectious or immune&rdquo; category includes both infectious and immune-mediated etiologies.
             <span class="refs">Scheffer IE, Berkovic S, Capovilla G, Connolly MB, French JA, Guilhoto L, et al. ILAE classification of the epilepsies. <em>Epilepsia</em>. 2017;58(4):512-521.</span></li>
           <li><strong>Neurological abnormalities:</strong> Presence of neurological abnormalities (e.g., motor deficits, cranial nerve abnormalities) identified at initial diagnosis.</li>
           <li><strong>Developmental disorders:</strong> Developmental delay or intellectual disability diagnosed either at epilepsy diagnosis or during subsequent follow-up.</li>
@@ -215,19 +214,18 @@
         <table class="or-tbl">
           <thead><tr><th>Variable</th><th>OR</th><th>95% CI</th><th>p</th></tr></thead>
           <tbody>
-            <tr><td>Seizure onset &lt; 1 year</td><td>1.866</td><td>1.499&ndash;2.321</td><td>&lt;0.001</td></tr>
-            <tr><td>Seizure freq: daily (vs yearly)</td><td>4.140</td><td>3.268&ndash;5.244</td><td>&lt;0.001</td></tr>
-            <tr><td>Seizure freq: weekly (vs yearly)</td><td>3.357</td><td>2.435&ndash;4.629</td><td>&lt;0.001</td></tr>
-            <tr><td>Seizure freq: monthly (vs yearly)</td><td>1.884</td><td>1.530&ndash;2.319</td><td>&lt;0.001</td></tr>
-            <tr><td>Status epilepticus</td><td>1.943</td><td>1.224&ndash;3.083</td><td>0.005</td></tr>
-            <tr><td>Developmental disorders</td><td>1.888</td><td>1.508&ndash;2.363</td><td>&lt;0.001</td></tr>
-            <tr><td>Neurological abnormalities</td><td>1.306</td><td>1.006&ndash;1.696</td><td>0.045</td></tr>
-            <tr><td>Epilepsy type: focal (vs generalized)</td><td>1.360</td><td>1.051&ndash;1.758</td><td>0.019</td></tr>
-            <tr><td>Epilepsy type: combined (vs generalized)</td><td>2.231</td><td>1.608&ndash;3.097</td><td>&lt;0.001</td></tr>
-            <tr><td>Epilepsy type: unknown (vs generalized)</td><td>1.485</td><td>0.987&ndash;2.237</td><td>0.058</td></tr>
-            <tr><td>EEG background abnormality</td><td>1.768</td><td>1.423&ndash;2.198</td><td>&lt;0.001</td></tr>
-            <tr><td>Etiology: structural</td><td>1.935</td><td>1.573&ndash;2.380</td><td>&lt;0.001</td></tr>
-            <tr><td>Etiology: infectious or autoimmune</td><td>2.092</td><td>1.350&ndash;3.242</td><td>0.001</td></tr>
+            <tr><td>Seizure onset &lt; 1 year</td><td>1.905</td><td>1.533&ndash;2.367</td><td>&lt;0.001</td></tr>
+            <tr><td>Seizure freq: daily (vs yearly)</td><td>4.284</td><td>3.386&ndash;5.421</td><td>&lt;0.001</td></tr>
+            <tr><td>Seizure freq: weekly (vs yearly)</td><td>3.398</td><td>2.468&ndash;4.679</td><td>&lt;0.001</td></tr>
+            <tr><td>Seizure freq: monthly (vs yearly)</td><td>1.934</td><td>1.574&ndash;2.378</td><td>&lt;0.001</td></tr>
+            <tr><td>Status epilepticus</td><td>2.066</td><td>1.312&ndash;3.253</td><td>0.002</td></tr>
+            <tr><td>Developmental disorders</td><td>1.907</td><td>1.525&ndash;2.386</td><td>&lt;0.001</td></tr>
+            <tr><td>Neurological abnormalities</td><td>1.371</td><td>1.058&ndash;1.777</td><td>0.017</td></tr>
+            <tr><td>Epilepsy type: focal (vs generalized)</td><td>1.354</td><td>1.049&ndash;1.747</td><td>0.020</td></tr>
+            <tr><td>Epilepsy type: combined (vs generalized)</td><td>2.214</td><td>1.598&ndash;3.068</td><td>&lt;0.001</td></tr>
+            <tr><td>Epilepsy type: unknown (vs generalized)</td><td>1.519</td><td>1.012&ndash;2.280</td><td>0.044</td></tr>
+            <tr><td>Etiology: structural</td><td>2.087</td><td>1.702&ndash;2.560</td><td>&lt;0.001</td></tr>
+            <tr><td>Etiology: infectious or immune</td><td>2.288</td><td>1.478&ndash;3.540</td><td>&lt;0.001</td></tr>
           </tbody>
         </table>
 
@@ -253,21 +251,20 @@
 </div>
 
 <script>
-const INTERCEPT = -2.2008;
+const INTERCEPT = -2.1437;
 const BETAS = {
-  "Sz_1y_yes": 0.6235,
-  "Sz_count_daily": 1.4206,
-  "Sz_count_weekly": 1.2111,
-  "Sz_count_monthly": 0.6333,
-  "status_epilepticus": 0.6643,
-  "dev_def": 0.6354,
-  "neuro_def": 0.2668,
-  "epilepsy_type_focal": 0.3071,
-  "epilepsy_type_combined": 0.8026,
-  "epilepsy_type_unknown": 0.3957,
-  "EEG_bg": 0.5701,
-  "eti_structural": 0.6601,
-  "eti_infection_or_autoimmune": 0.7383,
+  "Sz_1y_yes": 0.6446,
+  "Sz_count_daily": 1.455,
+  "Sz_count_weekly": 1.2232,
+  "Sz_count_monthly": 0.6598,
+  "status_epilepticus": 0.7256,
+  "dev_def": 0.6457,
+  "neuro_def": 0.3158,
+  "epilepsy_type_focal": 0.3029,
+  "epilepsy_type_combined": 0.7948,
+  "epilepsy_type_unknown": 0.4179,
+  "eti_structural": 0.7359,
+  "eti_infection_or_immune": 0.8275,
 };
 
 /* Human-readable labels for contribution chart */
@@ -282,9 +279,8 @@ const LABELS = {
   "epilepsy_type_focal": "Type: focal",
   "epilepsy_type_combined": "Type: combined",
   "epilepsy_type_unknown": "Type: unknown",
-  "EEG_bg": "EEG background abnl.",
   "eti_structural": "Etiology: structural",
-  "eti_infection_or_autoimmune": "Etiology: infect/autoimmune",
+  "eti_infection_or_immune": "Etiology: infect/immune",
 };
 
 let LOW_CUT = 0.20, HIGH_CUT = 0.70;
@@ -301,7 +297,6 @@ function getInputs(){
     dev: document.getElementById('dev').checked,
     neuro: document.getElementById('neuro').checked,
     etype: document.getElementById('etype').value,
-    eeg: document.getElementById('eeg').checked,
     eti_s: document.getElementById('eti_s').checked,
     eti_i: document.getElementById('eti_i').checked
   };
@@ -346,9 +341,8 @@ function renderSummary(last){
     ["Developmental disorders", fmtYesNo(last.inputs.dev)],
     ["Neurological abnormalities", fmtYesNo(last.inputs.neuro)],
     ["Epilepsy type", last.inputs.etype],
-    ["EEG background abnormality", fmtYesNo(last.inputs.eeg)],
     ["Etiology: structural", fmtYesNo(last.inputs.eti_s)],
-    ["Etiology: infectious or autoimmune", fmtYesNo(last.inputs.eti_i)],
+    ["Etiology: infectious or immune", fmtYesNo(last.inputs.eti_i)],
     ["Linear predictor (LP)", last.lp.toFixed(3)],
     ["Total Points", last.pts.toFixed(1)],
     ["Risk of DRE", pct(last.p) ],
@@ -395,9 +389,8 @@ function compute(){
   else if(inp.etype==="combined"){ lp += BETAS["epilepsy_type_combined"]; pts += betaToPoints(BETAS["epilepsy_type_combined"]); active.push({key:"epilepsy_type_combined", beta:BETAS["epilepsy_type_combined"], label:LABELS["epilepsy_type_combined"]}); }
   else if(inp.etype==="unknown"){ lp += BETAS["epilepsy_type_unknown"]; pts += betaToPoints(BETAS["epilepsy_type_unknown"]); active.push({key:"epilepsy_type_unknown", beta:BETAS["epilepsy_type_unknown"], label:LABELS["epilepsy_type_unknown"]}); }
 
-  if(inp.eeg){ lp += BETAS["EEG_bg"]; pts += betaToPoints(BETAS["EEG_bg"]); active.push({key:"EEG_bg", beta:BETAS["EEG_bg"], label:LABELS["EEG_bg"]}); }
   if(inp.eti_s){ lp += BETAS["eti_structural"]; pts += betaToPoints(BETAS["eti_structural"]); active.push({key:"eti_structural", beta:BETAS["eti_structural"], label:LABELS["eti_structural"]}); }
-  if(inp.eti_i){ lp += BETAS["eti_infection_or_autoimmune"]; pts += betaToPoints(BETAS["eti_infection_or_autoimmune"]); active.push({key:"eti_infection_or_autoimmune", beta:BETAS["eti_infection_or_autoimmune"], label:LABELS["eti_infection_or_autoimmune"]}); }
+  if(inp.eti_i){ lp += BETAS["eti_infection_or_immune"]; pts += betaToPoints(BETAS["eti_infection_or_immune"]); active.push({key:"eti_infection_or_immune", beta:BETAS["eti_infection_or_immune"], label:LABELS["eti_infection_or_immune"]}); }
 
   const p = invLogit(lp);
   let cat = "High", catClass = "risk-high", tileClass = "risk-high-bg", icon = "\uD83D\uDD34";
@@ -433,7 +426,6 @@ function resetAll(){
   document.getElementById('dev').checked = false;
   document.getElementById('neuro').checked = false;
   document.getElementById('etype').value = 'generalized';
-  document.getElementById('eeg').checked = false;
   document.getElementById('eti_s').checked = false;
   document.getElementById('eti_i').checked = false;
 
@@ -463,7 +455,7 @@ document.getElementById('low_cut').addEventListener('input', updateCutoffs);
 document.getElementById('high_cut').addEventListener('input', updateCutoffs);
 
 /* Auto-compute: re-calculate on every input change */
-['onset','freq','se','dev','neuro','etype','eeg','eti_s','eti_i'].forEach(function(id){
+['onset','freq','se','dev','neuro','etype','eti_s','eti_i'].forEach(function(id){
   document.getElementById(id).addEventListener('change', compute);
 });
 
